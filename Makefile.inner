@@ -1,0 +1,83 @@
+host-tools-tmp-dir = $(host-tools-outputs-dir)/.tmp
+ARCH = arm
+
+gmp-prepare:
+	$(MKDIR) $(host-tools-tmp-dir)/gmp/
+	$(MKDIR) $(host-tools-outputs-dir)/gmp/6.1.2
+	$(TAR) $(packages-dir)/gmp/6.1.2/gmp-6.1.2.tar -C $(host-tools-tmp-dir)/gmp
+
+gmp-build:
+	$(CD) $(host-tools-tmp-dir)/gmp/gmp-6.1.2; \
+		./configure --prefix=$(host-tools-outputs-dir)/gmp/6.1.2 \
+                    --libdir=$(host-tools-outputs-dir)/gmp/6.1.2/lib; \
+		$(MAKE) all;
+
+gmp-install:
+	$(CD) $(host-tools-tmp-dir)/gmp/gmp-6.1.2; \
+		$(MAKE) install
+
+
+mpfr-prepare:
+	$(MKDIR) $(host-tools-tmp-dir)/mpfr/
+	$(MKDIR) $(host-tools-outputs-dir)/mpfr/4.0.2
+	$(TAR) $(packages-dir)/mpfr/4.0.2/mpfr-4.0.2.tar.gz -C $(host-tools-tmp-dir)/mpfr
+
+mpfr-build:
+	$(CD) $(host-tools-tmp-dir)/mpfr/mpfr-4.0.2; \
+		./configure --prefix=$(host-tools-outputs-dir)/mpfr/4.0.2 \
+                    --libdir=$(host-tools-outputs-dir)/mpfr/4.0.2/lib \
+                    --with-gmp=$(host-tools-outputs-dir)/gmp/6.1.2; \
+		$(MAKE) all;
+
+mpfr-install:
+	$(CD) $(host-tools-tmp-dir)/mpfr/mpfr-4.0.2; \
+		$(MAKE) install
+
+mpc-prepare:
+	$(MKDIR) $(host-tools-tmp-dir)/mpc/
+	$(MKDIR) $(host-tools-outputs-dir)/mpc/1.1.0
+	$(TAR) $(packages-dir)/mpc/1.1.0/mpc-1.1.0.tar.gz -C $(host-tools-tmp-dir)/mpc
+
+mpc-build:
+	$(CD) $(host-tools-tmp-dir)/mpc/mpc-1.1.0; \
+		./configure --prefix=$(host-tools-outputs-dir)/mpc/1.1.0 \
+                    --libdir=$(host-tools-outputs-dir)/mpc/1.1.0/lib \
+                    --with-gmp=$(host-tools-outputs-dir)/gmp/6.1.2 \
+					--with-mpfr=$(host-tools-outputs-dir)/mpfr/4.0.2; \
+		$(MAKE) all;
+
+mpc-install:
+	$(CD) $(host-tools-tmp-dir)/mpc/mpc-1.1.0; \
+		$(MAKE) install
+
+gcc-prepare:
+	$(MKDIR) $(host-tools-tmp-dir)/gcc
+	$(MKDIR) $(host-tools-outputs-dir)/gcc/7.4.0
+	$(TAR) $(packages-dir)/gcc/7.4.0/gcc-7.4.0.tar -C $(host-tools-tmp-dir)/gcc
+	$(CD) $(host-tools-tmp-dir)/gcc/gcc-7.4.0;
+
+gcc-build:
+#	$(CD) $(host-tools-tmp-dir)/gcc/gcc-7.4.0; \
+		./configure --prefix=$(host-tools-outputs-dir)/gcc/7.4.0/arm-unknown-linux-gnueabi \
+                    --target=arm-unknown-linux-gnueabi \
+                    --with-gmp=$(host-tools-outputs-dir)/gmp/6.1.2 \
+                    --with-mpfr=$(host-tools-outputs-dir)/mpfr/4.0.2 \
+                    --with-mpc=$(host-tools-outputs-dir)/mpc/1.1.0 \
+                    --enable-languages=c,c++; \
+		$(MAKE) all; 
+	$(CD) $(host-tools-tmp-dir)/gcc/gcc-7.4.0; \
+		$(MAKE) all; 
+
+gcc-install:
+	$(CD) $(host-tools-tmp-dir)/gcc/gcc-7.4.0; \
+		$(MAKE) install;
+#	$(CD) $(host-tools-tmp-dir)/gcc/gcc-8.3.0; \
+		LD_LIBRARY_PATH=$(host-tools-outputs-dir)/mpfr/4.0.2/lib; \
+		./configure --prefix=$(host-tools-outputs-dir)/gcc/8.3.0/arm-unknown-linux-gnueabi \
+                    --target=arm-unknown-linux-gnueabi \
+                    --with-gmp=$(host-tools-outputs-dir)/gmp/6.1.2 \
+					--with-mpfr=$(host-tools-outputs-dir)/mpfr/4.0.2 \
+					--with-mpc=$(host-tools-outputs-dir)/mpc/1.1.0 \
+					--enable-languages=c; \
+		$(MAKE);
+	
