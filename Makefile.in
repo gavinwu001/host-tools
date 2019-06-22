@@ -1,6 +1,21 @@
 host-tools-tmp-dir = $(host-tools-outputs-dir)/.tmp
 ARCH = arm
 
+binutils-prepare:
+	$(MKDIR) $(host-tools-tmp-dir)/binutils/
+	$(MKDIR) $(host-tools-outputs-dir)/binutils/2.29.1
+	$(TAR) $(packages-dir)/binutils/2.29.1/binutils-2.29.1.tar.gz -C $(host-tools-tmp-dir)/binutils
+
+binutils-build:
+	$(CD) $(host-tools-tmp-dir)/binutils/binutils-2.29.1; \
+		./configure --prefix=$(host-tools-outputs-dir)/binutils/2.29.1 \
+                    --libdir=$(host-tools-outputs-dir)/binutils/2.29.1/lib; \
+		$(MAKE) all;
+
+binutils-install:
+	$(CD) $(host-tools-tmp-dir)/binutils/binutils-2.29.1; \
+		$(MAKE) install
+
 gmp-prepare:
 	$(MKDIR) $(host-tools-tmp-dir)/gmp/
 	$(MKDIR) $(host-tools-outputs-dir)/gmp/6.1.2
@@ -53,11 +68,12 @@ mpc-install:
 gcc-prepare:
 	$(MKDIR) $(host-tools-tmp-dir)/gcc
 	$(MKDIR) $(host-tools-outputs-dir)/gcc/7.4.0
-	$(TAR) $(packages-dir)/gcc/7.4.0/gcc-7.4.0.tar -C $(host-tools-tmp-dir)/gcc
+	$(TAR) $(packages-dir)/gcc/7.4.0/gcc-7.4.0.tar.gz -C $(host-tools-tmp-dir)/gcc
 	$(CD) $(host-tools-tmp-dir)/gcc/gcc-7.4.0;
 
 gcc-build:
-#	$(CD) $(host-tools-tmp-dir)/gcc/gcc-7.4.0; \
+	$(CD) $(host-tools-tmp-dir)/gcc/gcc-7.4.0; \
+		export LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(host-tools-outputs-dir)/gmp/6.1.2/lib:$(host-tools-outputs-dir)/mpfr/4.0.2/lib:$(host-tools-outputs-dir)/mpc/1.1.0/lib; \
 		./configure --prefix=$(host-tools-outputs-dir)/gcc/7.4.0/arm-unknown-linux-gnueabi \
                     --target=arm-unknown-linux-gnueabi \
                     --with-gmp=$(host-tools-outputs-dir)/gmp/6.1.2 \
@@ -65,19 +81,13 @@ gcc-build:
                     --with-mpc=$(host-tools-outputs-dir)/mpc/1.1.0 \
                     --enable-languages=c,c++; \
 		$(MAKE) all; 
-	$(CD) $(host-tools-tmp-dir)/gcc/gcc-7.4.0; \
+#	$(CD) $(host-tools-tmp-dir)/gcc/gcc-7.4.0; \
 		$(MAKE) all; 
 
 gcc-install:
 	$(CD) $(host-tools-tmp-dir)/gcc/gcc-7.4.0; \
 		$(MAKE) install;
-#	$(CD) $(host-tools-tmp-dir)/gcc/gcc-8.3.0; \
-		LD_LIBRARY_PATH=$(host-tools-outputs-dir)/mpfr/4.0.2/lib; \
-		./configure --prefix=$(host-tools-outputs-dir)/gcc/8.3.0/arm-unknown-linux-gnueabi \
-                    --target=arm-unknown-linux-gnueabi \
-                    --with-gmp=$(host-tools-outputs-dir)/gmp/6.1.2 \
-					--with-mpfr=$(host-tools-outputs-dir)/mpfr/4.0.2 \
-					--with-mpc=$(host-tools-outputs-dir)/mpc/1.1.0 \
-					--enable-languages=c; \
-		$(MAKE);
 	
+gcc-clean:
+	$(CD) $(host-tools-tmp-dir)/gcc/gcc-7.4.0; \
+		$(MAKE) distclean;

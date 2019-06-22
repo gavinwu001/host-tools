@@ -1,7 +1,8 @@
 export rootdir = $(shell pwd)/..
 include $(rootdir)/build/config/env.mk
 
-project = gmp
+project += binutils
+project += gmp
 project += mpfr
 project += mpc
 #project += gcc
@@ -21,3 +22,5 @@ install: $(installproject)
 
 all: prepare build install
 
+cleanproject = $(project:%=%-clean)
+clean: $(cleanproject)
